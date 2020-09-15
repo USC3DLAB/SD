@@ -11,6 +11,7 @@
 
 
 #include <twoSD.h>
+#include <inttypes.h>
 
 long long	MEM_USED = 0;	/* Amount of memory allocated each iteration */
 string   	outputDir;		/* output directory */
@@ -114,7 +115,7 @@ int readConfig() {
 
 	while ((status = (fscanf(fptr, "%s", line) != EOF))) {
 		if (!(strcmp(line, "RUN_SEED"))) {
-			fscanf(fptr, "%lld", &config.RUN_SEED[config.NUM_REPS+1]);
+			fscanf(fptr, "%" PRId64, &config.RUN_SEED[config.NUM_REPS+1]);
 			config.NUM_REPS++;
 			if ( config.NUM_REPS > maxReps ) {
 				config.RUN_SEED = (long long *) mem_realloc(config.RUN_SEED, (2*maxReps+1)*sizeof(long long));
@@ -156,7 +157,7 @@ int readConfig() {
 		else if (!(strcmp(line, "EVAL_FLAG")))
 			fscanf(fptr, "%d", &config.EVAL_FLAG);
 		else if (!(strcmp(line, "EVAL_SEED"))) {
-			fscanf(fptr, "%lld", &config.EVAL_SEED[r2++]);
+			fscanf(fptr, "%" PRId64, &config.EVAL_SEED[r2++]);
 			if ( r2 > maxReps ) {
 				config.RUN_SEED = (long long *) mem_realloc(config.RUN_SEED, (2*maxReps+1)*sizeof(long long));
 				maxReps *= 2;

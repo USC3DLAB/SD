@@ -25,24 +25,48 @@ FILE *openFile(string outputDir, string fname, char *mode) {
 	return fptr;
 }//END openFile()
 
+
+/* Platform dependent commands and file separators. */
+#if defined(_WIN32)
+#define FILE_SEPARATOR '\\'
+#define DELETE_COMMAND "DEL /S /Q %s*"
+#else
+#define FILE_SEPARATOR '/'
+#define DELETE_COMMAND "rm -r %s*"
+#endif
+
+/* Destructively convert the slashes in the path. */
+string convertSlashes(string path)
+{
+	const char replace = (FILE_SEPARATOR == '/' ? '\\': '/');
+	int i, len = strlen(path);
+	for( i = 0; i < len; ++i )
+		if ( path[i] == replace )
+			path[i] = FILE_SEPARATOR;
+	return path;
+}
+
 void createOutputDir(string outputDir, string algoName, string probName) {
 	struct stat st;
 	char buffer[2*BLOCKSIZE];
 
 	strcat(outputDir,algoName);
 	strcat(outputDir,"/");
+	convertSlashes(outputDir);
 	if ( stat(outputDir, &st) ) {
 		sprintf(buffer, "mkdir %s", outputDir);
 		system(buffer);
 	}
 	strcat(outputDir, probName);
 	strcat(outputDir, "/");
+	convertSlashes(outputDir);
 	if ( stat(outputDir, &st) ) {
 		sprintf(buffer, "mkdir %s", outputDir);
 		system(buffer);
 	}
 	else {
-		sprintf(buffer, "rm -r %s*", outputDir);
+		/* Platform dependent command. */
+		sprintf(buffer, DELETE_COMMAND, outputDir);
 		system(buffer);
 	}
 
