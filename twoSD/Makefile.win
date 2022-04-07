@@ -1,0 +1,61 @@
+# Makefile definitions for CPLEX 12.8
+#    10 Oct. 2018
+# For Ubuntu 12.04 LTS
+# Written by Harsha Gangammanavar
+#------------------------------------------------------------
+
+#------------------------------------------------------------
+# TODO: Replace with appropriate folder names and system descriptions
+# Location of CPLEX installations and system descriptions
+CPLEXDIR = C:/SOFT/CPLEX_Studio201/cplex
+CPLEXLIBDIR   = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
+CPLEXINCDIR   = $(CPLEXDIR)/include
+SYSTEM     = x64_windows_msvc14
+LIBFORMAT  = stat_mdd
+SUBDIRS := ./src
+
+#------------------------------------------------------------
+# Compiler, Linker Selections and Definitions (CC is for c)
+OBJ_SRCS := 
+ASM_SRCS := 
+C_SRCS := $(wildcard $(SUBDIRS)/*.c)
+O_SRCS := 
+S_UPPER_SRCS := 
+EXECUTABLES := 
+OBJS := $(C_SRCS:.c=.o)
+C_DEPS := $(C_SRCS:.c=.d)
+
+# TODO: replace cplex201 with corresponding library version.
+# The correct library name can be found under
+# lib/include/x64_windows_msvc14/stat_mdd/.
+CC  := gcc
+LIBS := -lcplex2010
+INCLUDES := -I$(CPLEXINCDIR) -I$(SUBDIRS)
+
+# Note that we need -DBUILD_CPXSTATIC on Windows
+# to avoid DLL __dllspec(dllimport deprecated)
+# errors.
+# https://stackoverflow.com/questions/61182200/external-header-file-ilcplex-cpxconst-h-causing-causing-compiler-error
+CFLAGS := -Wall -D_LP64 -DBUILD_CPXSTATIC -fvisibility=default
+
+#------------------------------------------------------------
+# All Target
+all: twoSD library
+
+# Tool invocations
+twoSD: $(OBJS) $(USER_OBJS)
+	$(CC) $(CFLAGS) -L$(CPLEXLIBDIR) -o "twoSD" $(OBJS) $(USER_OBJS) $(LIBS)
+
+library: $(OBJS) $(USER_OBJS)
+	$(CC) -fPIC -shared -L$(CPLEXLIBDIR) -o "libtwosd.dll" $(OBJS) $(USER_OBJS) $(LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -fexceptions -m64 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" -c "$<"
+
+
+# Other Targets
+clean:
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) twoSD.exe libtwosd.dll
+	-@echo ' '
+
+.PHONY: all clean dependents
